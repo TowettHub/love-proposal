@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Very Important Question ❤️</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+  body{
+    overflow:hidden;
+    color:#fff;
+    background:linear-gradient(135deg,#ff4d8d,#8b5cf6,#22d3ee,#fb7185);
+    background-size:400% 400%;
+    animation:bg 14s ease infinite;
+  }
+  @keyframes bg{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+
+  .hearts{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .heart{position:absolute;bottom:-50px;font-size:20px;opacity:.65;animation:floatUp linear forwards}
+  @keyframes floatUp{
+    from{transform:translateY(0) rotate(0deg);opacity:0}
+    15%{opacity:.7}to{transform:translateY(-115vh) rotate(360deg);opacity:0}
+  }
+
+  .wrap{position:relative;z-index:2;min-height:100vh;display:grid;place-items:center;padding:22px}
+  .card{
+    width:min(92vw,650px);
+    min-height:460px;
+    padding:42px 28px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;
+    border:1px solid rgba(255,255,255,.28);
+    background:rgba(255,255,255,.14);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border-radius:32px;
+    box-shadow:0 25px 70px rgba(40,0,50,.28);
+    animation:cardIn .55s ease;
+  }
+    @keyframes cardIn{from{opacity:0;transform:scale(.94) translateY(15px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+  .emoji{font-size:58px;margin-bottom:14px;filter:drop-shadow(0 8px 12px rgba(0,0,0,.15))}
+  h1{font-size:clamp(2rem,8vw,3.4rem);line-height:1.05;margin-bottom:16px;text-shadow:0 5px 20px rgba(0,0,0,.18)}
+  p{font-size:1.08rem;line-height:1.6;max-width:520px;color:rgba(255,255,255,.92);margin-bottom:26px}
+  .question{font-size:clamp(1.7rem,6vw,2.45rem);margin-bottom:28px}
+
+  .buttons{position:relative;width:min(100%,470px);min-height:100px;display:flex;justify-content:center;align-items:center;gap:18px}
+  button{
+    border:0;cursor:pointer;color:#fff;font-size:1.05rem;font-weight:800;
+    padding:15px 28px;border-radius:999px;
+    transition:transform .22s ease,box-shadow .22s ease,font-size .22s ease,padding .22s ease;
+    box-shadow:0 10px 25px rgba(0,0,0,.22);
+    touch-action:manipulation;
+  }
+  #yesBtn{background:linear-gradient(135deg,#22c55e,#16a34a);position:relative;z-index:3}
+  #noBtn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);position:relative;z-index:4}
+  button:hover{transform:translateY(-3px) scale(1.03)}
+  button:active{transform:scale(.97)}
+
+    .progress{display:flex;gap:8px;margin-bottom:24px}
+  .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3)}
+  .dot.active{background:#fff;box-shadow:0 0 14px #fff}
+
+  .tiny{font-size:.84rem;opacity:.72;margin-top:16px}
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);
+    background:rgba(20,10,30,.75);padding:12px 18px;border-radius:999px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:20;font-size:.9rem;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .final h1{font-size:clamp(2.5rem,10vw,4.5rem)}
+  .big-heart{font-size:110px;animation:pulse 1.1s ease-in-out infinite}
+  @keyframes pulse{50%{transform:scale(1.15)}}
+  .restart{background:rgba(255,255,255,.18);margin-top:8px}
+
+  .confetti{position:fixed;top:-20px;width:9px;height:15px;z-index:15;animation:confettiFall 2.8s linear forwards}
+  @keyframes confettiFall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+    @media(max-width:480px){
+    .card{min-height:520px;padding:34px 20px;border-radius:26px}
+    .buttons{min-height:145px}
+    button{padding:14px 22px}
+    #noBtn{position:absolute}
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts" id="hearts"></div>
+<div class="toast" id="toast"></div>
+
+<main class="wrap">
+  <section class="card" id="card"></section>
+</main>
+
+<script>
+const questions = [
+  {
+    emoji:"💌",
+    text:"Do you love me?",
+    yes:"YES ❤️",
+    no:"NO 😏"
+  },
+  {
+    emoji:"💖",
+    text:"Will you keep choosing me, even when I'm being annoying? 😂",
+    yes:"OF COURSE ❤️",
+    no:"NOPE 🙈"
+  },
+    {
+    emoji:"🌹",
+    text:"Are you ready for a beautiful adventure with me?",
+    yes:"LET'S GO 💕",
+    no:"NOT YET 😭"
+  },
+  {
+    emoji:"💍",
+    text:"Will you be my special person? ❤️",
+    yes:"YES, I WILL 🥹❤️",
+    no:"I'M THINKING 😏"
+  }
+];
+
+let page = 0;
+let noClicks = 0;
+
+const card = document.getElementById("card");
+const toast = document.getElementById("toast");
+const hearts = document.getElementById("hearts");
+
+function makeHearts(){
+  const symbols=["❤️","💕","💗","💖","💘","✨"];
+  const h=document.createElement("span");
+  h.className="heart";
+  h.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+  h.style.left=Math.random()*100+"vw";
+  h.style.fontSize=(14+Math.random()*24)+"px";
+    h.style.animationDuration=(5+Math.random()*7)+"s";
+  hearts.appendChild(h);
+  setTimeout(()=>h.remove(),13000);
+}
+setInterval(makeHearts,450);
+
+function showToast(message){
+  toast.textContent=message;
+  toast.classList.add("show");
+  clearTimeout(showToast.t);
+  showToast.t=setTimeout(()=>toast.classList.remove("show"),1600);
+}
+
+function renderQuestion(){
+  const q=questions[page];
+  card.innerHTML=`
+    <div class="progress">
+      ${questions.map((_,i)=>`<span class="dot ${i===page?'active':''}"></span>`).join("")}
+    </div>
+    <div class="emoji">${q.emoji}</div>
+    <h1 class="question">${q.text}</h1>
+    <p>Choose wisely, beautiful human. 😌❤️</p>
+    <div class="buttons" id="buttons">
+      <button id="yesBtn">${q.yes}</button>
+      <button id="noBtn">${q.no}</button>
+    </div>
+    <div class="tiny">P.S. The developer may have added a tiny bit of mischief. 😂</div>
+  `;
+
+    document.getElementById("yesBtn").onclick=nextPage;
+  const no=document.getElementById("noBtn");
+  no.onclick=runAway;
+  no.onmouseenter=runAway;
+  no.ontouchstart=(e)=>{e.preventDefault();runAway()};
+}
+
+function runAway(){
+  noClicks++;
+
+  const no=document.getElementById("noBtn");
+  const yes=document.getElementById("yesBtn");
+  const buttons=document.getElementById("buttons");
+
+  const messages=[
+    "😂 Nice try!",
+    "404: NO NOT FOUND ❤️",
+    "That button is shy! 🙈",
+    "The developer predicted that move. 😎",
+    "ERROR 403: Rejection temporarily unavailable 😂",
+    "Are you sure you want to keep trying? 👀",
+    "Okay, you're making the YES button stronger! 💪❤️"
+  ];
+  showToast(messages[Math.min(noClicks-1,messages.length-1)]);
+
+    // Make YES progressively more tempting, without making it impossible
+  const scale=Math.min(1 + noClicks*.12,2.25);
+  yes.style.transform=`scale(${scale})`;
+
+  // Move NO somewhere inside the button area
+  const rect=buttons.getBoundingClientRect();
+  const maxX=Math.max(20,rect.width-no.offsetWidth-10);
+  const maxY=Math.max(20,rect.height-no.offsetHeight-10);
+  const x=Math.random()*maxX-maxX/2;
+  const y=Math.random()*maxY-maxY/2;
+
+  no.style.position="absolute";
+  no.style.left="50%";
+  no.style.top="50%";
+  no.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+
+  // Extra YES copies appear after repeated NO attempts
+  if(noClicks>=3 && noClicks<=10){
+    addYesClone();
+  }
+}
+
+function addYesClone(){
+  const buttons=document.getElementById("buttons");
+  if(buttons.querySelectorAll(".clone").length>=8)return;
+
+    const b=document.createElement("button");
+  b.className="clone";
+  b.textContent="YES ❤️";
+  b.style.background="linear-gradient(135deg,#22c55e,#16a34a)";
+  b.style.position="absolute";
+  b.style.left=(10+Math.random()*75)+"%";
+  b.style.top=(10+Math.random()*75)+"%";
+  b.style.transform=`scale(${.8+Math.random()*.7})`;
+  b.onclick=nextPage;
+  buttons.appendChild(b);
+}
+
+function nextPage(){
+  if(page < questions.length-1){
+    page++;
+    noClicks=0;
+    renderQuestion();
+  }else{
+    showFinal();
+  }
+}
+
+  function showFinal(){
+  card.classList.add("final");
+  card.innerHTML=`
+    <div class="big-heart">❤️</div>
+    <h1>It's a YES! 🥹</h1>
+    <p>
+      Congratulations! You have successfully completed the
+      <strong>Very Serious Relationship Application™</strong>. 😂❤️
+    </p>
+    <p>
+      No contracts. No pressure. Just two people choosing to
+      make each other smile. 🌹
+    </p>
+    <button class="restart" id="restart">Replay the madness 😂</button>
+  `;
+  document.getElementById("restart").onclick=()=>{
+    page=0;noClicks=0;card.className="card";renderQuestion();
+  };
+  confetti();
+}
+
+function confetti(){
+  const symbols=["❤️","💖","💕","✨","🌹","🎉"];
+  for(let i=0;i<70;i++){
+    const c=document.createElement("span");
+    c.className="confetti";
+    c.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+    c.style.left=Math.random()*100+"vw";
+    c.style.fontSize=(12+Math.random()*20)+"px";
+    c.style.animationDelay=(Math.random()*1.2)+"s";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4200);
+  }
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
