@@ -10,14 +10,26 @@
   body{
     overflow:hidden;
     color:#fff;
-    background:linear-gradient(135deg,#ff4d8d,#8b5cf6,#22d3ee,#fb7185);
-    background-size:400% 400%;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,255,255,.28) 0 2px, transparent 3px),
+      radial-gradient(circle at 80% 15%, rgba(255,255,255,.22) 0 2px, transparent 3px),
+      linear-gradient(135deg,#ff2f7d,#ff6fae 28%,#9b5de5 62%,#5b5be7 82%,#ff477e);
+    background-size:auto,auto,400% 400%;
     animation:bg 14s ease infinite;
   }
   @keyframes bg{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
 
   .hearts{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-  .heart{position:absolute;bottom:-50px;font-size:20px;opacity:.65;animation:floatUp linear forwards}
+  .heart{position:absolute;bottom:-50px;font-size:20px;opacity:.72;animation:floatUp linear forwards;filter:drop-shadow(0 3px 8px rgba(255,255,255,.25))}
+  .sparkle{position:absolute;bottom:-30px;font-size:16px;opacity:.7;animation:floatUp linear forwards}
+  .butterfly{position:absolute;bottom:-40px;font-size:24px;opacity:.75;animation:butterflyFly linear forwards;filter:drop-shadow(0 4px 8px rgba(255,100,180,.35))}
+  @keyframes butterflyFly{
+    0%{transform:translate(0,0) rotate(-8deg);opacity:0}
+    12%{opacity:.8}
+    35%{transform:translate(45px,-35vh) rotate(8deg)}
+    65%{transform:translate(-35px,-70vh) rotate(-6deg)}
+    100%{transform:translate(25px,-115vh) rotate(8deg);opacity:0}
+  }
   @keyframes floatUp{
     from{transform:translateY(0) rotate(0deg);opacity:0}
     15%{opacity:.7}to{transform:translateY(-115vh) rotate(360deg);opacity:0}
@@ -35,8 +47,17 @@
     backdrop-filter:blur(18px);
     -webkit-backdrop-filter:blur(18px);
     border-radius:32px;
-    box-shadow:0 25px 70px rgba(40,0,50,.28);
+    box-shadow:0 25px 70px rgba(40,0,50,.28),0 0 55px rgba(255,120,190,.16);
     animation:cardIn .55s ease;
+    position:relative;
+  }
+  .card::before{
+    content:"❤  ✦  💕  ✦  ❤";
+    position:absolute;
+    top:16px;left:50%;transform:translateX(-50%);
+    width:100%;font-size:15px;letter-spacing:8px;opacity:.45;
+    pointer-events:none;
+  }
   }
   @keyframes cardIn{from{opacity:0;transform:scale(.94) translateY(15px)}to{opacity:1;transform:scale(1) translateY(0)}}
 
@@ -45,7 +66,7 @@
   p{font-size:1.08rem;line-height:1.6;max-width:520px;color:rgba(255,255,255,.92);margin-bottom:26px}
   .question{font-size:clamp(1.7rem,6vw,2.45rem);margin-bottom:28px}
 
-  .buttons{position:relative;width:min(100%,470px);min-height:100px;display:flex;justify-content:center;align-items:center;gap:18px}
+  .buttons{position:relative;width:min(100%,470px);min-height:120px;display:flex;justify-content:center;align-items:center;gap:18px}
   button{
     border:0;cursor:pointer;color:#fff;font-size:1.05rem;font-weight:800;
     padding:15px 28px;border-radius:999px;
@@ -131,18 +152,32 @@ const card = document.getElementById("card");
 const toast = document.getElementById("toast");
 const hearts = document.getElementById("hearts");
 
-function makeHearts(){
-  const symbols=["❤️","💕","💗","💖","💘","✨"];
+function makeRomanticParticle(){
+  const heartsList=["❤️","💕","💗","💖","💘","💝","❣️","🌹"];
+  const sparkleList=["✨","⭐","✦","💫","🤍"];
+  const butterflies=["🦋","🦋","🦋"];
+
+  const roll=Math.random();
   const h=document.createElement("span");
-  h.className="heart";
-  h.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+
+  if(roll<0.62){
+    h.className="heart";
+    h.textContent=heartsList[Math.floor(Math.random()*heartsList.length)];
+  }else if(roll<0.82){
+    h.className="butterfly";
+    h.textContent=butterflies[Math.floor(Math.random()*butterflies.length)];
+  }else{
+    h.className="sparkle";
+    h.textContent=sparkleList[Math.floor(Math.random()*sparkleList.length)];
+  }
+
   h.style.left=Math.random()*100+"vw";
-  h.style.fontSize=(14+Math.random()*24)+"px";
-  h.style.animationDuration=(5+Math.random()*7)+"s";
+  h.style.fontSize=(14+Math.random()*25)+"px";
+  h.style.animationDuration=(5+Math.random()*8)+"s";
   hearts.appendChild(h);
-  setTimeout(()=>h.remove(),13000);
+  setTimeout(()=>h.remove(),15000);
 }
-setInterval(makeHearts,450);
+setInterval(makeRomanticParticle,260);
 
 function showToast(message){
   toast.textContent=message;
@@ -179,58 +214,77 @@ function runAway(){
 
   const no=document.getElementById("noBtn");
   const yes=document.getElementById("yesBtn");
-  const buttons=document.getElementById("buttons");
 
   const messages=[
     "😂 Nice try!",
     "404: NO NOT FOUND ❤️",
-    "That button is shy! 🙈",
-    "The developer predicted that move. 😎",
-    "ERROR 403: Rejection temporarily unavailable 😂",
-    "Are you sure you want to keep trying? 👀",
-    "Okay, you're making the YES button stronger! 💪❤️"
+    "The YES team is growing! 😏❤️",
+    "One NO? That's okay... watch this. 😂",
+    "ERROR 403: Romance overload ❤️",
+    "The screen is becoming suspiciously romantic... 👀",
+    "Okay, you've activated MAXIMUM YES mode! 😂❤️"
   ];
+
   showToast(messages[Math.min(noClicks-1,messages.length-1)]);
 
-  // Make YES progressively more tempting, without making it impossible
-  const scale=Math.min(1 + noClicks*.12,2.25);
+  // NO stays in its own space. It does not dodge.
+  no.style.transform="scale(1)";
+
+  // The original YES becomes slightly larger.
+  const scale=Math.min(1 + noClicks*.08,1.55);
   yes.style.transform=`scale(${scale})`;
 
-  // Move NO somewhere inside the button area
-  const rect=buttons.getBoundingClientRect();
-  const maxX=Math.max(20,rect.width-no.offsetWidth-10);
-  const maxY=Math.max(20,rect.height-no.offsetHeight-10);
-  const x=Math.random()*maxX-maxX/2;
-  const y=Math.random()*maxY-maxY/2;
+  // Every NO click creates several new YES buttons.
+  const amount=Math.min(2 + Math.floor(noClicks/2),6);
+  for(let i=0;i<amount;i++) addYesClone();
 
-  no.style.position="absolute";
-  no.style.left="50%";
-  no.style.top="50%";
-  no.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-
-  // Extra YES copies appear after repeated NO attempts
-  if(noClicks>=3 && noClicks<=10){
-    addYesClone();
+  // After repeated NO clicks, unleash YES buttons across the whole viewport.
+  if(noClicks>=3){
+    const amount2=Math.min(3 + noClicks,12);
+    for(let i=0;i<amount2;i++) addScreenYes();
   }
 }
 
+function addScreenYes(){
+  const b=document.createElement("button");
+  b.className="screenYes";
+  b.textContent=["YES ❤️","YES 💕","YES 💖","YES 🌹","YES 🥰"][Math.floor(Math.random()*5)];
+
+  b.style.position="fixed";
+  b.style.left=(2+Math.random()*94)+"vw";
+  b.style.top=(5+Math.random()*88)+"vh";
+  b.style.zIndex=10+Math.floor(Math.random()*5);
+  b.style.background="linear-gradient(135deg,#22c55e,#16a34a)";
+  b.style.padding=(10+Math.random()*10)+"px "+(15+Math.random()*18)+"px";
+  b.style.fontSize=(.8+Math.random()*.7)+"rem";
+  b.style.transform=`rotate(${Math.random()*24-12}deg) scale(${.75+Math.random()*.7})`;
+
+  b.onclick=nextPage;
+  document.body.appendChild(b);
+  setTimeout(()=>b.remove(),45000);
+}
 function addYesClone(){
   const buttons=document.getElementById("buttons");
-  if(buttons.querySelectorAll(".clone").length>=8)return;
+  if(buttons.querySelectorAll(".clone").length>=18)return;
 
   const b=document.createElement("button");
   b.className="clone";
-  b.textContent="YES ❤️";
+  b.textContent=["YES ❤️","YES 💕","YES 💖","YES 🥰"][Math.floor(Math.random()*4)];
   b.style.background="linear-gradient(135deg,#22c55e,#16a34a)";
   b.style.position="absolute";
-  b.style.left=(10+Math.random()*75)+"%";
-  b.style.top=(10+Math.random()*75)+"%";
-  b.style.transform=`scale(${.8+Math.random()*.7})`;
+  b.style.left=(5+Math.random()*82)+"%";
+  b.style.top=(5+Math.random()*82)+"%";
+  b.style.transform=`rotate(${Math.random()*20-10}deg) scale(${.7+Math.random()*.65})`;
+  b.style.zIndex=6;
   b.onclick=nextPage;
   buttons.appendChild(b);
 }
+function clearScreenYes(){
+  document.querySelectorAll(".screenYes").forEach(el=>el.remove());
+}
 
 function nextPage(){
+  clearScreenYes();
   if(page < questions.length-1){
     page++;
     noClicks=0;
